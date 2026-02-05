@@ -1,0 +1,7 @@
+{
+  "event.type": "LOG",
+  "content": "April 24, 2022 09:59:52 [myPool-thread-1] INFO Some message",
+  "status": "NONE",
+  "timestamp": "1650889391528",
+  "loglevel": "NONE"
+}

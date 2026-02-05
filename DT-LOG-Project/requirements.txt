@@ -1,0 +1,2 @@
+# Dynatrace Rule Helper – requirements
+PyYAML>=5.4

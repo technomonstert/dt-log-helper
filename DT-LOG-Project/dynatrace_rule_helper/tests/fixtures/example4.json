@@ -1,0 +1,5 @@
+{
+  "event.type": "LOG",
+  "content": "thread.name myPool-thread-1 request.id 000d000 other stuff",
+  "status": "INFO"
+}

@@ -4,23 +4,12 @@
 
 `dynatrace-rule-helper` is a **command‑line utility** that turns a sample log line (or a JSON log record) into a **Dynatrace PARSE rule** written in the **Dynatrace Pattern Language (DPL)**.  It supports the full set of matchers documented in the Dynatrace *Log‑Processing* guide, can infer literals and matcher types automatically, and respects Dynatrace’s rule‑size limits.
 
-## Features
-
-- **All DPL matchers** covered: TIMESTAMP, LD, INT, FLOAT, STRING, IPADDR, URL, JSON, ENUM, REGEX, ARRAY, STRUCTURE, etc. (future matchers are easy to add).
-- **Heuristic mode** – give only the value you want to extract and the tool discovers the preceding literal and appropriate matcher.
-- **Explicit mode** – specify literal, value, matcher type, and export name (`-l`, `-v`, `-t`, `-a`).
-- **Multiple extractions** in a single rule (comma‑separated lists).
-- **OpenPipeline output** (YAML) stub – can be switched with `--open-pipeline`.
-- **Limits enforcement** – ensures rule length ≤ 10 KB, literals ≤ 256 KB, ≤ 50 fragments.
-- **Extensible architecture** – matcher classes live in `dynatrace_rule_helper/matcher/`; adding a new matcher is a matter of creating a subclass of `BaseMatcher` and registering it.
-- **Comprehensive test suite** covering all 14 examples from the official docs.
-
 ## Installation
 
 ```bash
 # Clone the repo (or copy the files into a folder)
-git clone https://github.com/your-repo/dynatrace-rule-helper.git
-cd dynatrace-rule-helper
+git clone https://github.com/technomonstert/dt-log-helper.git
+cd dt-log-helper
 
 # Install in editable mode (recommended for development)
 pip install -e .
@@ -37,13 +26,24 @@ python -m dynatrace_rule_helper.cli \
     -a aws.billed.duration
 ```
 
-Output:
+**Output**
 
 ```
 PARSE(content, "LD 'Billed Duration:' SPACE? INT:aws.billed.duration")
 ```
 
-Paste that line into **Settings → Log Monitoring → Processing → Add rule** in Dynatrace.
+> **Note:** The `sample.json` used in this example is shown below, so you don’t need to clone the repository to try it. If you do clone the repo, the same file is located at the repository root (`dt-log-helper/sample.json`).
+
+### `sample.json`
+
+```json
+{
+  "event.type": "LOG",
+  "content": "Billed Duration: 5034"
+}
+```
+
+Paste the resulting DPL line into **Settings → Log Monitoring → Processing → Add rule** in Dynatrace.
 
 ## OpenPipeline (YAML) output
 

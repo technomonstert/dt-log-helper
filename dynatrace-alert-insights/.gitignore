@@ -1,0 +1,13 @@
+# Private configuration – never commit
+oauth.json
+tenants.json
+
+# Python artefacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+env/
+build/
+dist/
+*.egg-info/

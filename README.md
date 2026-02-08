@@ -69,6 +69,30 @@ pip install -e .``
 
 ---
 
+
+
+
+## Supported Command-Line Flags
+
+| Short Flag | Long Flag | Description | Example |
+|-----------|-----------|-------------|---------|
+| `-f` | `--file` | Path to the sample log file (JSON or plain text) | `--file sample.json` |
+| `-l` | `--literal` | Fixed text or JSONPath expression to match in the log | `--literal "Billed Duration:"` |
+| `-v` | `--value` | Example value to extract from the log | `--value 5034` |
+| `-t` | `--type` | Matcher type (`INT`, `FLOAT`, `STRING`, `JSONPATH`) | `--type INT` |
+| `-a` | `--alias` | Attribute name to create in Dynatrace | `--alias aws.billed.duration` |
+|  | `--dry-run` | Print the generated DPL rule without writing files | `--dry-run` |
+|  | `--verbose` | Enable verbose/debug output | `--verbose` |
+
+---
+
+## Notes
+
+- Multiple values can be provided as required.
+- Attribute aliases do not need any order.
+
+
+
 ## Quick Start
 
 ### Input log example (Assuming this is the content of sample.json)

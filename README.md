@@ -5,7 +5,7 @@ Generate Dynatrace log parsing rules from real log examples — without writing 
 Dynatrace log processing rules use Dynatrace Pattern Language (DPL), a small but strict domain-specific language.
 Writing these rules manually is slow, error-prone, and difficult to validate.
 
-This tool takes a sample log line (JSON or plain text) and produces a ready-to-paste Dynatrace log processing rule.
+This tool takes a sample log line (JSON) and produces a ready-to-paste Dynatrace log processing rule.
 
 No DPL expertise required.
 
@@ -41,7 +41,6 @@ This tool solves that by translating log examples into valid DPL rules automatic
 - Not a Dynatrace API client
 - Not a log ingestion tool
 - Not a replacement for Dynatrace log processing
-- Not a requirement to know Python
 
 Python is only the implementation language — users do not need Python knowledge.
 
@@ -64,32 +63,39 @@ pip install dynatrace-dpl-helper
 
 ### From source
 
-git clone https://github.com/technomonstert/dt-log-helper.git
+``git clone https://github.com/technomonstert/dt-log-helper.git
 cd dt-log-helper
-pip install -e .
+pip install -e .``
 
 ---
 
 ## Quick Start
 
-### Input log example
+### Input log example (Assuming this is the content of sample.json)
 
-{
+``{
   "content": "Billed Duration: 5034"
-}
+}``
 
 ### Command
 
+``
 dynatrace-dpl-helper --file sample.json --literal "Billed Duration:" --value 5034 --type INT --alias aws.billed.duration
+``
 
 ### Output (DPL rule)
-
+``
 PARSE(content, "LD 'Billed Duration:' SPACE? INT:aws.billed.duration")
-
+``
 Paste this directly into:
-
+``
 Dynatrace → Settings → Log Monitoring → Processing → Add processing rule
+``
 
+```
+Note:
+This does not always produce syntactically valid DPL rules as this tool is still in development. Always validate this with test option provided at Dynatrace log processing rule creation page. 
+```
 ---
 
 ## License

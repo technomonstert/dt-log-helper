@@ -1,2 +1,0 @@
-[console_scripts]
-dynatrace-dpl-helper = dynatrace_rule_helper.cli:main

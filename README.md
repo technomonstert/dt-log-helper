@@ -1,166 +1,97 @@
-# Dynatrace Rule Helper – README
+# Dynatrace Log Rule Helper
 
-## Overview
+Generate Dynatrace log parsing rules from real log examples — without writing DPL by hand.
 
-`dynatrace-dpl-helper` (formerly **dynatrace‑rule‑helper**) is a **tiny command‑line utility** that turns a sample log line (or a JSON log record) into a **Dynatrace PARSE rule** written in the Dynatrace Pattern Language (DPL).  It is deliberately **zero‑dependency** (aside from Python >=3.8) and is meant for **Dynatrace‑focused users** who may not be comfortable with Python.
+Dynatrace log processing rules use Dynatrace Pattern Language (DPL), a small but strict domain-specific language.
+Writing these rules manually is slow, error-prone, and difficult to validate.
 
----
+This tool takes a sample log line (JSON or plain text) and produces a ready-to-paste Dynatrace log processing rule.
 
-## 🎯 Who is this for?
-
-- **Dynatrace engineers or admins** who want to create DPL rules quickly but have **no Python experience**.
-- Teams that need a **step‑by‑step guide** from "install" to "paste rule into the UI".
-- Anyone who prefers **clear Windows instructions** and a minimal learning curve.
+No DPL expertise required.
 
 ---
 
-## 📦 Installation (Windows – complete walk‑through)
+## Why This Tool Exists
 
-1. **Install Python**
-   - Go to https://www.python.org/downloads/windows/ and download the **latest stable release** (3.11.x works fine).
-   - Run the installer. **IMPORTANT:** check **"Add Python to PATH"** on the first screen, then click **"Install Now"**.
-   - After installation, open a **Command Prompt** (`Win + R`, type `cmd`, Enter) and verify:
-     ```cmd
-     python --version
-     ```
-     You should see something like `Python 3.11.x`.
+In Dynatrace, extracting fields from logs requires defining log processing rules using DPL constructs like:
 
-2. **Upgrade pip** (the Python package manager) – still in the same Command Prompt:
-   ```cmd
-   python -m pip install --upgrade pip
-   ```
+- PARSE
+- LD
+- SPACE?
+- INT, FLOAT, STRING
 
-3. **Install the helper**
-   ```cmd
-   pip install dynatrace-dpl-helper
-   ```
-   You’ll see a short success message.  The console script `dynatrace-dpl-helper` is now available.
+Common problems:
+- One missing token breaks the rule
+- No syntax validation in the UI
+- No preview or test extraction
+- Difficult to translate human-readable logs into DPL grammar
+
+This tool solves that by translating log examples into valid DPL rules automatically.
 
 ---
 
-## 🚀 Quick‑start (the classic DPL rule)
+## What This Tool Is (and Is Not)
 
-1. **Create a sample file** (you can copy‑paste this into a new file called `sample.json` in any folder, e.g., `C:\temp\sample.json`):
-   ```json
-   {
-     "event.type": "LOG",
-     "content": "Billed Duration: 5034"
-   }
-   ```
-2. **Run the helper** (adjust the path to where you saved `sample.json`):
-   ```cmd
-   dynatrace-dpl-helper \
-       -f C:\temp\sample.json \
-       -l "Billed Duration:" \
-       -v 5034 \
-       -t INT \
-       -a aws.billed.duration
-   ```
-   *If you prefer the `python -m` form, you can also run:*
-   ```cmd
-   python -m dynatrace_rule_helper.cli -f C:\temp\sample.json -l "Billed Duration:" -v 5034 -t INT -a aws.billed.duration
-   ```
-3. **Result** (printed to the console):
-   ```
-   PARSE(content, "LD 'Billed Duration:' SPACE? INT:aws.billed.duration")
-   ```
-4. **Paste the rule** into the Dynatrace UI:
-   - Open Dynatrace → **Settings** → **Log Monitoring** → **Processing** → **Add rule**.
-   - Paste the entire line (including the leading `PARSE(`) into the rule editor.
-   - Click **Save**.
+### What it is
+- A helper utility that converts log examples into Dynatrace log parsing rules
+- A DPL rule generator
+- A copy-paste companion for Dynatrace Log Monitoring configuration
+
+### What it is not
+- Not a Dynatrace API client
+- Not a log ingestion tool
+- Not a replacement for Dynatrace log processing
+- Not a requirement to know Python
+
+Python is only the implementation language — users do not need Python knowledge.
 
 ---
 
-## 📋 All CLI flags (plain‑English description)
+## Who Should Use This
 
-| Flag | Alias | Required? | What to put in | Example |
-|------|-------|----------|----------------|---------|
-| `-f` | `--file` | ✅ | Path to a **JSON** file (or a plain‑text file) that contains the sample log. | `C:\temp\sample.json` |
-| `-l` | `--literal` | ✅ | The **exact literal string** you want to match (including spaces, punctuation). | `"Billed Duration:"` |
-| `-v` | `--value` | ✅ | The **value** that follows the literal – this determines the matcher type if you don’t supply `-t`. | `5034` |
-| `-t` | `--type` | ✅ | Desired **matcher type**. Common values:
-- `INT` – integer numbers
-- `FLOAT` – floating‑point numbers
-- `STRING` – free text
-- `LD` – literal‑delimiter pattern
-- `TIMESTAMP` – datetime values
-- `IPADDR` – IP addresses
-- `URL` – URLs
-- `JSONPATH` – for nested JSON extraction |
-  `INT` |
-| `-a` | `--alias` | ✅ | The **Dynatrace attribute name** where the extracted value will be stored. Use dot‑notation for nested attributes. | `aws.billed.duration` |
-| `--custom` | – | ❌ | Provide a **full DPL fragment** (≥ 250 chars) if the built‑in matcher shortcuts are insufficient (e.g., `ENUM`, `REGEX`, `MASK`). The fragment is inserted verbatim. | `"ENUM('INFO':0,'WARN':1,'ERROR':2):my.field"` |
-| `--dry-run` | – | ❌ | **Only print** the generated rule; do **not** write any files. Useful for CI pipelines. |
-| `--verbose` | – | ❌ | Show **debug information** (how the tool inferred the matcher, limit checks, etc.). |
-| `--export-pdf` | – | ❌ | Export a **PDF snapshot** of the rule. Provide a file path, e.g., `--export-pdf C:\temp\rule.pdf`. Requires `wkhtmltopdf` to be installed on the machine. |
+- Dynatrace engineers working with log parsing
+- SREs and observability engineers creating log-based attributes
+- Anyone tired of manually writing DPL rules
+- Teams building dashboards, alerts, and metrics from logs
 
 ---
 
-## 🗂️ Sample files & where to put them
+## Installation
 
-- **sample.json** – place it anywhere you like; just give the full path to `-f`.
-- If you work with **nested JSON**, create a file like `nested.json`:
-  ```json
-  {
-    "event.type": "LOG",
-    "content": {
-      "request": {"id": "abc123", "durationMs": 542},
-      "status": "OK"
-    }
-  }
-  ```
-  Then call the tool with a JSONPath matcher:
-  ```cmd
-  dynatrace-dpl-helper -f C:\temp\nested.json -l "$.request.id,$.request.durationMs" -a request.id,request.duration -t JSONPATH,JSONPATH
-  ```
-  The output will contain two `JSON_PATH` fragments.
+### From PyPI (recommended)
 
----
+pip install dynatrace-dpl-helper
 
-## 📤 What the output means (Dynatrace side)
+### From source
 
-- The **`PARSE(content, "…")`** line tells Dynatrace to look at the `content` field of a log event and apply the pattern inside.
-- **`LD`** = *Literal‑Delimiter* – matches a literal string followed optionally by a delimiter (e.g., a space).
-- **`INT`**, **`FLOAT`**, etc., are the *matcher types* that extract the value and bind it to the alias you supplied with `-a`.
-- After the rule is saved, Dynatrace will start extracting the value for every future log that matches the pattern, making it available for dashboards, alerts, and analytics.
-
----
-
-## 🛠️ Troubleshooting (common pitfalls for non‑Python users)
-
-| Symptom | Likely cause | Fix |
-|---------|--------------|-----|
-| `python` is not recognized | Python was not added to PATH during installation | Re‑run the installer and tick *Add Python to PATH* or add `C:\Python311\Scripts` and `C:\Python311\` to your system `PATH` manually. |
-| `ModuleNotFoundError: No module named 'dynatrace_rule_helper'` | The package was installed for a different Python version | Run `python -m pip install dynatrace-dpl-helper` using the **same** `python` you invoke later (check with `where python`). |
-| `JSONDecodeError` | The file supplied with `-f` is not valid JSON | Verify the file with a JSON validator (e.g., https://jsonlint.com) or use a plain‑text log file instead. |
-| No output or empty rule | You omitted a required flag (`-f`, `-l`, `-v`, `-t`, `-a`) | Re‑run the command and ensure all required flags are present. |
-| PDF export fails | `wkhtmltopdf` not installed or not in PATH | Download https://wkhtmltopdf.org/downloads.html, install, and add its `bin` folder to PATH. |
-| “Rule too large – exceeds 10 KB” | The generated DPL string is longer than Dynatrace’s limit | Use a **custom fragment** (`--custom`) to split the rule or simplify the pattern. |
-
----
-
-## 📚 Full documentation reference
-
-- **Dynatrace Pattern Language (DPL) reference** – https://docs.dynatrace.com/docs/platform/grail/dynatrace-pattern-language
-- **Log‑Processing examples (14 use cases)** – https://docs.dynatrace.com/docs/analyze-explore-automate/logs/lma-classic-log-processing/lma-log-processing-examples
-
----
-
-## 📦 Development & contribution (for the curious)
-
-If you *do* have Python experience and want to extend the helper (add a new matcher, improve tests, etc.), the repo is on GitHub:
-
-```bash
 git clone https://github.com/technomonstert/dt-log-helper.git
 cd dt-log-helper
-pip install -e .   # editable install for development
-pytest -q          # run the test suite
-```
-
-Pull requests are welcome!
+pip install -e .
 
 ---
 
-## 📜 License
+## Quick Start
 
-`dynatrace-dpl-helper` is released under the **MIT License**.
+### Input log example
+
+{
+  "content": "Billed Duration: 5034"
+}
+
+### Command
+
+dynatrace-dpl-helper --file sample.json --literal "Billed Duration:" --value 5034 --type INT --alias aws.billed.duration
+
+### Output (DPL rule)
+
+PARSE(content, "LD 'Billed Duration:' SPACE? INT:aws.billed.duration")
+
+Paste this directly into:
+
+Dynatrace → Settings → Log Monitoring → Processing → Add processing rule
+
+---
+
+## License
+
+MIT License

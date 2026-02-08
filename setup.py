@@ -6,7 +6,7 @@ long_desc = (this_dir / "README.md").read_text(encoding="utf-8")
 
 setup(
     name="dynatrace-dpl-helper",
-    version="0.1.1",
+    version="0.1.3",
     description="Generate Dynatrace log parsing (DPL) rules from sample logs",
     long_description=long_desc,
     long_description_content_type="text/markdown",
@@ -15,7 +15,7 @@ setup(
     install_requires=[],
     entry_points={
         "console_scripts": [
-            "dynatrace-dpl-helper=dt_log_helper.cli:main"
+            "dynatrace-dpl-helper=dynatrace_rule_helper.cli:main"
         ]
     },
     license="MIT",

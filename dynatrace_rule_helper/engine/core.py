@@ -99,7 +99,11 @@ def process_log_file(
     fragments: List[str] = []
 
     # Parse custom fragments if provided (they bypass automatic matcher creation)
-    custom_list = [c.strip() for c in custom.split(",")] if custom else []
+    # Use a simple split only when multiple aliases are expected; otherwise keep the whole string.
+    if custom and count == 1:
+        custom_list = [custom]
+    else:
+        custom_list = [c.strip() for c in custom.split(",")] if custom else []
 
     # If custom fragments are supplied, we expect them to already be valid DPL fragments.
     # The alias list is still required for consistency, but we won\'t use it for building.
@@ -112,38 +116,50 @@ def process_log_file(
         # 3️⃣ Build a matcher for each extraction request (original path)
         # ------------------------------------------------------------------
         for idx, alias in enumerate(alias_list):
-            # Resolve literal, value, type – falling back to inference when missing
+            # Resolve literal and value for this alias
             literal = literal_list[idx] if literal_list else None
             value = value_list[idx] if value_list else None
-            mtype = type_list[idx] if type_list else None
-
-            # If literal is missing but we have a value, try to infer it from content
+            # If literal is missing but we have a value, infer it from content
             if not literal and value:
                 literal, _ = infer_literal_from_value(content, value)
             if literal:
                 validate_literal(literal)
-
-            # If matcher type is missing, infer from value (or default to STRING)
-            if not mtype:
-                if value:
-                    mtype = guess_matcher_type(value)
+            # Override matcher type if explicit types were provided
+            if type_list:
+                mtype = type_list[idx]
+            else:
+                # Determine matcher type – falling back to inference when missing
+                if alias.lower() == "timestamp":
+                    mtype = "TIMESTAMP"
+                elif alias.lower() == "loglevel":
+                    mtype = "UPPER"
                 else:
-                    mtype = "STRING"
-
+                    if value:
+                        mtype = guess_matcher_type(value)
+                    else:
+                        mtype = "STRING"
             # Special handling for timestamps – DPL has a dedicated function
             if mtype == "TIMESTAMP":
                 pattern = TimestampMatcher.infer_pattern(content)
                 if not pattern:
                     raise Exception("Could not infer a timestamp pattern from the log line.")
                 matcher = TimestampMatcher(export_name=alias, pattern=pattern, literal=literal)
+                fragments.append(matcher.build())
+            elif mtype == "UPPER":
+                # Upper‑case transformation – no literal needed
+                fragments.append(f"UPPER:{alias}")
+                continue
             else:
                 MatcherCls = MATCHER_MAP.get(mtype)
                 if not MatcherCls:
                     raise Exception(f"Unsupported matcher type: {mtype}")
-                # Most matchers accept (export_name, literal)
-                matcher = MatcherCls(export_name=alias, literal=literal)
+                # JSONMatcher does not take a literal argument
+                if MatcherCls.__name__ == "JSONMatcher":
+                    matcher = MatcherCls(export_name=alias)
+                else:
+                    matcher = MatcherCls(export_name=alias, literal=literal)
+                fragments.append(matcher.build())
 
-            fragments.append(matcher.build())
 
     # ------------------------------------------------------------------
     # 4️⃣ Validate overall limits

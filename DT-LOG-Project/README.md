@@ -45,21 +45,7 @@ PARSE(content, "LD 'Billed Duration:' SPACE? INT:aws.billed.duration")
 
 Paste the resulting DPL line into **Settings → Log Monitoring → Processing → Add rule** in Dynatrace.
 
-## OpenPipeline (YAML) output
-
-Add `--open-pipeline` to get an OpenPipeline YAML snippet instead of classic DPL:
-
-```bash
-python -m dynatrace_rule_helper.cli \
-    -f sample.json \
-    -l "Billed Duration:" \
-    -v 5034 \
-    -t INT \
-    -a aws.billed.duration \
-    --open-pipeline
-```
-
-*(OpenPipeline generation is currently a stub – it will emit a minimal YAML structure that can be expanded later.)*
+**OpenPipeline support has been removed from the CLI**
 
 ## Full documentation reference
 

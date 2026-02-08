@@ -7,7 +7,7 @@ this_dir = Path(__file__).parent
 
 setup(
     name="dynatrace-dpl-helper",
-    version="0.1.2",
+    version="0.1.3",
     description="Generate Dynatrace PARSE (DPL) rules from sample log lines.",
     long_description=(this_dir / "README.md").read_text(encoding="utf-8"),
     long_description_content_type="text/markdown",
